@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Condin — Hub</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background: #08080a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 4D Canvas Background */
+        #tesseract-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.45;
+        }
+
+        /* Светящиеся белые треугольники сверху */
+        .triangles-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            pointer-events: none;
+            z-index: 1;
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.6)) drop-shadow(0 0 30px rgba(255, 255, 255, 0.3));
+        }
+
+        /* Светящиеся белые треугольники снизу */
+        .triangles-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            pointer-events: none;
+            z-index: 1;
+            transform: rotate(180deg);
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.6)) drop-shadow(0 0 30px rgba(255, 255, 255, 0.3));
+        }
+
+        /* Главный заголовок */
+        .top-header {
+            font-size: 3.2rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.4);
+            margin-bottom: 50px;
+            z-index: 2;
+            user-select: none;
+        }
+
+        /* Объединенный контейнер-сетка */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            width: 100%;
+            max-width: 1200px;
+            z-index: 2;
+        }
+
+        /* Тёмно-белая карточка */
+        .card {
+            background: rgba(14, 14, 18, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 255, 255, 0.2);
+        }
+
+        .card-content h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .card-content p {
+            font-size: 0.95rem;
+            color: #a0a0aa;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        /* Белая кнопка ссылки */
+        .link-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.25s ease;
+            width: 100%;
+        }
+
+        .link-btn:hover {
+            background: #ffffff;
+            color: #08080a;
+            border-color: #ffffff;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 4D Cube Background Canvas -->
+    <canvas id="tesseract-bg"></canvas>
+
+    <!-- Графика треугольников сверху -->
+    <svg class="triangles-top" viewBox="0 0 1440 120" preserveAspectRatio="none">
+        <polygon points="0,0 120,90 240,0 360,110 480,0 600,80 720,0 840,100 960,0 1080,70 1200,0 1320,90 1440,0 1440,0 0,0" fill="none" stroke="#ffffff" stroke-width="2.5" opacity="0.9" />
+        <polygon points="60,0 180,60 300,0 420,70 540,0 660,50 780,0 900,60 1020,0 1140,50 1260,0 1380,60" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.5" />
+    </svg>
+
+    <!-- Графика треугольников снизу -->
+    <svg class="triangles-bottom" viewBox="0 0 1440 120" preserveAspectRatio="none">
+        <polygon points="0,0 120,90 240,0 360,110 480,0 600,80 720,0 840,100 960,0 1080,70 1200,0 1320,90 1440,0 1440,0 0,0" fill="none" stroke="#ffffff" stroke-width="2.5" opacity="0.9" />
+        <polygon points="60,0 180,60 300,0 420,70 540,0 660,50 780,0 900,60 1020,0 1140,50 1260,0 1380,60" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.5" />
+    </svg>
+
+    <header class="top-header">Condin</header>
+
+    <main class="grid-container">
+        <!-- Блок Tetris 3D -->
+        <article class="card">
+            <div class="card-content">
+                <h1>Tetris 3D</h1>
+                <p>Play 3D Tetris right in your browser.</p>
+            </div>
+            <a href="https://taqalemonlimon.github.io/Tetris3dRussian/" target="_blank" class="link-btn">Open Tetris 3D</a>
+        </article>
+
+        <!-- Блок WebOS -->
+        <article class="card">
+            <div class="card-content">
+                <h1>WebOS</h1>
+                <p>Interactive operating system in a web format.</p>
+            </div>
+            <a href="https://webos-ver7.netlify.app/" target="_blank" class="link-btn">Launch WebOS</a>
+        </article>
+
+        <!-- Блок MistWarp / Hello World -->
+        <article class="card">
+            <div class="card-content">
+                <h1>Hello, World!</h1>
+                <p>Welcome to my personal website on GitHub Pages.</p>
+            </div>
+            <a href="https://mistwarp.org/users/CONDIN2" target="_blank" class="link-btn">My MistWarp Profile</a>
+        </article>
+
+        <!-- Блок Taqa Green OL Exprange -->
+        <article class="card">
+            <div class="card-content">
+                <h1>Green OL Tools</h1>
+                <p>Download tools and resources from Green OL Exprange.</p>
+            </div>
+            <a href="https://sites.google.com/view/taqa-green-ol-exprange-dowload/%D1%81%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-tols" target="_blank" class="link-btn">Download Tools</a>
+        </article>
+
+        <!-- Блок Taqa OLS -->
+        <article class="card">
+            <div class="card-content">
+                <h1>Taqa OLS</h1>
+                <p>Visit the official homepage of Taqa OLS.</p>
+            </div>
+            <a href="https://sites.google.com/view/taqa-ols/%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F-%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0?authuser=0" target="_blank" class="link-btn">Visit Taqa OLS</a>
+        </article>
+
+        <!-- Блок GitHub Profile -->
+        <article class="card">
+            <div class="card-content">
+                <h1>GitHub</h1>
+                <p>Check out my GitHub profile and source code projects.</p>
+            </div>
+            <a href="https://github.com/taqalemonlimon" target="_blank" class="link-btn">Visit GitHub Profile</a>
+        </article>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('tesseract-bg');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // 16 вершин 4D гиперкуба (Tesseract)
+        const vertices4D = [];
+        for (let i = 0; i < 16; i++) {
+            vertices4D.push([
+                (i & 1) ? 1 : -1,
+                (i & 2) ? 1 : -1,
+                (i & 4) ? 1 : -1,
+                (i & 8) ? 1 : -1
+            ]);
+        }
+
+        // 32 ребра тессеракта
+        const edges = [];
+        for (let i = 0; i < 16; i++) {
+            for (let j = i + 1; j < 16; j++) {
+                let diff = 0;
+                for (let k = 0; k < 4; k++) {
+                    if ((i & (1 << k)) !== (j & (1 << k))) diff++;
+                }
+                if (diff === 1) edges.push([i, j]);
+            }
+        }
+
+        let angleXY = 0;
+        let angleZW = 0;
+        let angleXW = 0;
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            angleXY += 0.008;
+            angleZW += 0.012;
+            angleXW += 0.005;
+
+            const projected2D = [];
+
+            for (let i = 0; i < vertices4D.length; i++) {
+                let [x, y, z, w] = vertices4D[i];
+
+                // Вращение в 4D пространстве (плоскости XY, ZW, XW)
+                let x1 = x * Math.cos(angleXY) - y * Math.sin(angleXY);
+                let y1 = x * Math.sin(angleXY) + y * Math.cos(angleXY);
+
+                let z1 = z * Math.cos(angleZW) - w * Math.sin(angleZW);
+                let w1 = z * Math.sin(angleZW) + w * Math.cos(angleZW);
+
+                let x2 = x1 * Math.cos(angleXW) - w1 * Math.sin(angleXW);
+                let w2 = x1 * Math.sin(angleXW) + w1 * Math.cos(angleXW);
+
+                // Перспективная проекция из 4D в 3D
+                const distance4D = 2.8;
+                const wScale = 1 / (distance4D - w2);
+                let x3D = x2 * wScale;
+                let y3D = y1 * wScale;
+                let z3D = z1 * wScale;
+
+                // Перспективная проекция из 3D в 2D (на Canvas)
+                const distance3D = 3.2;
+                const zScale = 1 / (distance3D - z3D);
+
+                // Масштаб увеличен в 10 раз (был 0.45, стал 4.5)
+                const scale = Math.min(canvas.width, canvas.height) * 4.5;
+
+                let screenX = canvas.width / 2 + x3D * zScale * scale;
+                let screenY = canvas.height / 2 + y3D * zScale * scale;
+
+                projected2D.push({ x: screenX, y: screenY, z: z3D });
+            }
+
+            // Отрисовка рёбер с белым свечением
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = '#ffffff';
+
+            for (let i = 0; i < edges.length; i++) {
+                const p1 = projected2D[edges[i][0]];
+                const p2 = projected2D[edges[i][1]];
+
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.lineWidth = 1.8;
+                ctx.stroke();
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
